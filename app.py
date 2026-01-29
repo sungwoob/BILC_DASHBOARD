@@ -18,6 +18,7 @@ class CsvSummary:
     row_count: int
     column_count: int
     columns: List[str]
+    has_function_list: bool = False
     function_list_unique_count: int | None = None
     function_name_unique_count: int | None = None
     function_name_values: List[str] | None = None
@@ -27,26 +28,27 @@ class CsvSummary:
 def summarize_csv(path: Path) -> CsvSummary:
     try:
         dataframe = pd.read_csv(path)
+        has_function_list = "functionList" in dataframe.columns
         function_list_unique_count = None
         function_name_unique_count = None
         function_name_values: List[str] | None = None
-        if "functionList" in dataframe.columns:
+        if has_function_list:
             function_list_unique_count = int(
                 dataframe["functionList"].dropna().astype(str).nunique()
             )
-            name_pattern = re.compile(r"name:\s*([A-Za-z0-9_]+)")
+            name_pattern = re.compile(r"name\\s*[:=]\\s*['\\\"]?([A-Za-z0-9_-]+)")
             names: List[str] = []
             for value in dataframe["functionList"].dropna().astype(str):
                 names.extend(name_pattern.findall(value))
-            if names:
-                unique_names = sorted(set(names))
-                function_name_unique_count = len(unique_names)
-                function_name_values = unique_names
+            unique_names = sorted(set(names))
+            function_name_unique_count = len(unique_names)
+            function_name_values = unique_names
         return CsvSummary(
             filename=path.name,
             row_count=int(dataframe.shape[0]),
             column_count=int(dataframe.shape[1]),
             columns=[str(column) for column in dataframe.columns],
+            has_function_list=has_function_list,
             function_list_unique_count=function_list_unique_count,
             function_name_unique_count=function_name_unique_count,
             function_name_values=function_name_values,

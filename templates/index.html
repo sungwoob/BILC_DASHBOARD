@@ -77,12 +77,10 @@
         <div class="meta">
           <span class="badge">행 수: {{ summary.row_count }}</span>
           <span class="badge">열 수: {{ summary.column_count }}</span>
-          {% if summary.function_list_unique_count is not none %}
+          {% if summary.has_function_list %}
           <span class="badge"
             >functionList 고유값: {{ summary.function_list_unique_count }}</span
           >
-          {% endif %}
-          {% if summary.function_name_unique_count is not none %}
           <span class="badge"
             >function name 고유값: {{ summary.function_name_unique_count }}</span
           >
@@ -99,12 +97,16 @@
           {% endfor %}
         </ul>
         {% endif %}
-        {% if summary.function_name_values %}
+        {% if summary.has_function_list %}
         <h3>function name 목록</h3>
         <ul>
+          {% if summary.function_name_values %}
           {% for name in summary.function_name_values %}
           <li>{{ name }}</li>
           {% endfor %}
+          {% else %}
+          <li>데이터 없음</li>
+          {% endif %}
         </ul>
         {% endif %}
         {% if summary.error %}
