@@ -82,6 +82,11 @@
             >functionList 고유값: {{ summary.function_list_unique_count }}</span
           >
           {% endif %}
+          {% if summary.function_name_unique_count is not none %}
+          <span class="badge"
+            >function name 고유값: {{ summary.function_name_unique_count }}</span
+          >
+          {% endif %}
           <a class="badge" href="{{ url_for('download_csv', filename=summary.filename) }}"
             >CSV 다운로드</a
           >
@@ -91,6 +96,14 @@
         <ul>
           {% for column in summary.columns %}
           <li>{{ column }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        {% if summary.function_name_values %}
+        <h3>function name 목록</h3>
+        <ul>
+          {% for name in summary.function_name_values %}
+          <li>{{ name }}</li>
           {% endfor %}
         </ul>
         {% endif %}
