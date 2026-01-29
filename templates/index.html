@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BILC CSV Dashboard</title>
+    <style>
+      body {
+        font-family: "Helvetica Neue", Arial, sans-serif;
+        margin: 0;
+        padding: 32px;
+        background: #f5f7fb;
+        color: #1f2933;
+      }
+      header {
+        margin-bottom: 24px;
+      }
+      h1 {
+        margin-bottom: 8px;
+      }
+      .subtitle {
+        color: #52606d;
+        font-size: 0.95rem;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.08);
+      }
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin: 12px 0 0;
+      }
+      .badge {
+        background: #e0e7ff;
+        color: #3730a3;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 0.85rem;
+      }
+      ul {
+        margin: 8px 0 0;
+        padding-left: 18px;
+      }
+      .error {
+        color: #b91c1c;
+        background: #fee2e2;
+        padding: 8px 12px;
+        border-radius: 8px;
+        margin-top: 12px;
+      }
+      footer {
+        margin-top: 24px;
+        color: #7b8794;
+        font-size: 0.85rem;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>BILC CSV Dashboard</h1>
+      <div class="subtitle">GitHub 데이터셋 폴더: {{ dataset_dir }}</div>
+    </header>
+
+    {% if summaries %}
+    <section class="grid">
+      {% for summary in summaries %}
+      <article class="card">
+        <h2>{{ summary.filename }}</h2>
+        <div class="meta">
+          <span class="badge">행 수: {{ summary.row_count }}</span>
+          <span class="badge">열 수: {{ summary.column_count }}</span>
+          <a class="badge" href="{{ url_for('download_csv', filename=summary.filename) }}"
+            >CSV 다운로드</a
+          >
+        </div>
+        {% if summary.columns %}
+        <h3>컬럼 목록</h3>
+        <ul>
+          {% for column in summary.columns %}
+          <li>{{ column }}</li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+        {% if summary.error %}
+        <div class="error">CSV 읽기 오류: {{ summary.error }}</div>
+        {% endif %}
+      </article>
+      {% endfor %}
+    </section>
+    {% else %}
+    <div class="card">dataset 폴더에서 CSV 파일을 찾을 수 없습니다.</div>
+    {% endif %}
+
+    <footer>Flask + pandas로 생성된 간단한 CSV 메타데이터 대시보드입니다.</footer>
+  </body>
+</html>
