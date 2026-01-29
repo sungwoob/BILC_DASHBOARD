@@ -20,7 +20,6 @@ class CsvSummary:
     column_count: int
     columns: List[str]
     has_function_list: bool = False
-    function_list_unique_count: int | None = None
     function_name_unique_count: int | None = None
     function_name_values: List[str] | None = None
     normal_qa_count: int | None = None
@@ -31,13 +30,9 @@ def summarize_csv(path: Path) -> CsvSummary:
     try:
         dataframe = pd.read_csv(path)
         has_function_list = "functionList" in dataframe.columns
-        function_list_unique_count = None
         function_name_unique_count = None
         function_name_values: List[str] | None = None
         if has_function_list:
-            function_list_unique_count = int(
-                dataframe["functionList"].dropna().astype(str).nunique()
-            )
             names: List[str] = []
             normal_qa_count = 0
 
@@ -91,7 +86,6 @@ def summarize_csv(path: Path) -> CsvSummary:
             column_count=int(dataframe.shape[1]),
             columns=[str(column) for column in dataframe.columns],
             has_function_list=has_function_list,
-            function_list_unique_count=function_list_unique_count,
             function_name_unique_count=function_name_unique_count,
             function_name_values=function_name_values,
             normal_qa_count=normal_qa_count if has_function_list else None,
@@ -136,4 +130,4 @@ def download_csv(filename: str):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=8000, debug=True)
