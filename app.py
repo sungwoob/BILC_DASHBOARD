@@ -2,9 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
-import re
 import json
-from typing import List
+import ast
+from typing import List, Any
 
 import pandas as pd
 from flask import Flask, abort, render_template, send_from_directory
@@ -40,18 +40,46 @@ def summarize_csv(path: Path) -> CsvSummary:
             )
             names: List[str] = []
             normal_qa_count = 0
+
+            def extract_function_names(parsed: Any) -> List[str]:
+                extracted: List[str] = []
+                if isinstance(parsed, dict):
+                    function_value = parsed.get("function")
+                    if isinstance(function_value, dict):
+                        function_name = function_value.get("name")
+                        if isinstance(function_name, str):
+                            extracted.append(function_name)
+                    functions_value = parsed.get("functions")
+                    if isinstance(functions_value, list):
+                        for item in functions_value:
+                            if not isinstance(item, dict):
+                                continue
+                            function_name = item.get("name")
+                            if isinstance(function_name, str):
+                                extracted.append(function_name)
+                elif isinstance(parsed, list):
+                    for item in parsed:
+                        if not isinstance(item, dict):
+                            continue
+                        function_value = item.get("function", item)
+                        if isinstance(function_value, dict):
+                            function_name = function_value.get("name")
+                            if isinstance(function_name, str):
+                                extracted.append(function_name)
+                return extracted
+
             for value in dataframe["functionList"].dropna().astype(str):
+                parsed = None
                 try:
                     parsed = json.loads(value)
                 except json.JSONDecodeError:
-                    parsed = None
-                function_name = None
-                if isinstance(parsed, dict):
-                    function_name = (
-                        parsed.get("function", {}).get("name")  # type: ignore[union-attr]
-                    )
-                if isinstance(function_name, str) and function_name:
-                    names.append(function_name)
+                    try:
+                        parsed = ast.literal_eval(value)
+                    except (ValueError, SyntaxError):
+                        parsed = None
+                extracted_names = extract_function_names(parsed)
+                if extracted_names:
+                    names.extend(extracted_names)
                 else:
                     normal_qa_count += 1
             unique_names = sorted(set(names))
