@@ -77,6 +77,9 @@
         <div class="meta">
           <span class="badge">행 수: {{ summary.row_count }}</span>
           <span class="badge">열 수: {{ summary.column_count }}</span>
+          <a class="badge" href="{{ url_for('download_csv', filename=summary.filename) }}"
+            >CSV 다운로드</a
+          >
         </div>
         {% if summary.columns %}
         <h3>컬럼 목록</h3>

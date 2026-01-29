@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import List
 
 import pandas as pd
-from flask import Flask, render_template
+from flask import Flask, abort, render_template, send_from_directory
 
 APP_ROOT = Path(__file__).resolve().parent
 DATASET_DIR = APP_ROOT / "dataset"
@@ -58,6 +58,14 @@ def index() -> str:
         summaries=summaries,
         dataset_dir=str(DATASET_DIR),
     )
+
+
+@app.route("/download/<path:filename>")
+def download_csv(filename: str):
+    file_path = DATASET_DIR / filename
+    if not file_path.exists() or file_path.suffix.lower() != ".csv":
+        return abort(404)
+    return send_from_directory(DATASET_DIR, filename, as_attachment=True)
 
 
 if __name__ == "__main__":
