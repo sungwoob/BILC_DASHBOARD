@@ -84,6 +84,9 @@
           <span class="badge"
             >function name 고유값: {{ summary.function_name_unique_count }}</span
           >
+          <span class="badge"
+            >일반 질의응답 데이터: {{ summary.normal_qa_count }}</span
+          >
           {% endif %}
           <a class="badge" href="{{ url_for('download_csv', filename=summary.filename) }}"
             >CSV 다운로드</a

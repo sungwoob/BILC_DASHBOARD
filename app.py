@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from pathlib import Path
 import re
+import json
 from typing import List
 
 import pandas as pd
@@ -22,6 +23,7 @@ class CsvSummary:
     function_list_unique_count: int | None = None
     function_name_unique_count: int | None = None
     function_name_values: List[str] | None = None
+    normal_qa_count: int | None = None
     error: str | None = None
 
 
@@ -36,10 +38,22 @@ def summarize_csv(path: Path) -> CsvSummary:
             function_list_unique_count = int(
                 dataframe["functionList"].dropna().astype(str).nunique()
             )
-            name_pattern = re.compile(r"name\\s*[:=]\\s*['\\\"]?([A-Za-z0-9_-]+)")
             names: List[str] = []
+            normal_qa_count = 0
             for value in dataframe["functionList"].dropna().astype(str):
-                names.extend(name_pattern.findall(value))
+                try:
+                    parsed = json.loads(value)
+                except json.JSONDecodeError:
+                    parsed = None
+                function_name = None
+                if isinstance(parsed, dict):
+                    function_name = (
+                        parsed.get("function", {}).get("name")  # type: ignore[union-attr]
+                    )
+                if isinstance(function_name, str) and function_name:
+                    names.append(function_name)
+                else:
+                    normal_qa_count += 1
             unique_names = sorted(set(names))
             function_name_unique_count = len(unique_names)
             function_name_values = unique_names
@@ -52,6 +66,7 @@ def summarize_csv(path: Path) -> CsvSummary:
             function_list_unique_count=function_list_unique_count,
             function_name_unique_count=function_name_unique_count,
             function_name_values=function_name_values,
+            normal_qa_count=normal_qa_count if has_function_list else None,
         )
     except Exception as exc:  # noqa: BLE001 - show error in UI
         return CsvSummary(
