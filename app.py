@@ -17,17 +17,24 @@ class CsvSummary:
     row_count: int
     column_count: int
     columns: List[str]
+    function_list_unique_count: int | None = None
     error: str | None = None
 
 
 def summarize_csv(path: Path) -> CsvSummary:
     try:
         dataframe = pd.read_csv(path)
+        function_list_unique_count = None
+        if "functionList" in dataframe.columns:
+            function_list_unique_count = int(
+                dataframe["functionList"].dropna().astype(str).nunique()
+            )
         return CsvSummary(
             filename=path.name,
             row_count=int(dataframe.shape[0]),
             column_count=int(dataframe.shape[1]),
             columns=[str(column) for column in dataframe.columns],
+            function_list_unique_count=function_list_unique_count,
         )
     except Exception as exc:  # noqa: BLE001 - show error in UI
         return CsvSummary(
