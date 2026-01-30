@@ -100,9 +100,9 @@
         {% if summary.has_function_list %}
         <h3>function name 목록</h3>
         <ul>
-          {% if summary.function_name_values %}
-          {% for name in summary.function_name_values %}
-          <li>{{ name }}</li>
+          {% if summary.function_name_counts %}
+          {% for name, count in summary.function_name_counts %}
+          <li>{{ name }} ({{ count }})</li>
           {% endfor %}
           {% else %}
           <li>데이터 없음</li>

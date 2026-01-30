@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 import json
 import ast
+from collections import Counter
 from typing import List, Any
 
 import pandas as pd
@@ -22,6 +23,7 @@ class CsvSummary:
     has_function_list: bool = False
     function_name_unique_count: int | None = None
     function_name_values: List[str] | None = None
+    function_name_counts: List[tuple[str, int]] | None = None
     normal_qa_count: int | None = None
     error: str | None = None
 
@@ -32,6 +34,7 @@ def summarize_csv(path: Path) -> CsvSummary:
         has_function_list = "functionList" in dataframe.columns
         function_name_unique_count = None
         function_name_values: List[str] | None = None
+        function_name_counts: List[tuple[str, int]] | None = None
         if has_function_list:
             names: List[str] = []
             normal_qa_count = 0
@@ -77,9 +80,13 @@ def summarize_csv(path: Path) -> CsvSummary:
                     names.extend(extracted_names)
                 else:
                     normal_qa_count += 1
-            unique_names = sorted(set(names))
+            name_counts = Counter(names)
+            unique_names = sorted(name_counts.keys())
             function_name_unique_count = len(unique_names)
             function_name_values = unique_names
+            function_name_counts = [
+                (name, name_counts[name]) for name in unique_names
+            ]
         return CsvSummary(
             filename=path.name,
             row_count=int(dataframe.shape[0]),
@@ -88,6 +95,7 @@ def summarize_csv(path: Path) -> CsvSummary:
             has_function_list=has_function_list,
             function_name_unique_count=function_name_unique_count,
             function_name_values=function_name_values,
+            function_name_counts=function_name_counts,
             normal_qa_count=normal_qa_count if has_function_list else None,
         )
     except Exception as exc:  # noqa: BLE001 - show error in UI
